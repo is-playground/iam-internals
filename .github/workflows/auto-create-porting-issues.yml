@@ -30,6 +30,7 @@ jobs:
             const issueTitle = context.payload.issue.title;
             
             // Prepare assignees for the new issue
+            console.log("Assignees being added: ", assignees);
             const assigneeLogins = assignees ? assignees.map(assignee => assignee.login) : [];
 
             const issueData = {
