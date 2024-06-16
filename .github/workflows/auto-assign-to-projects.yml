@@ -2,7 +2,7 @@ name: Add IAM issues to Internal projects
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened, labeled, unlabeled]
 
 jobs:
   add-to-project:
@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add issue to IAM Patches
-        if: github.event.action == 'opened' || (github.event.action == 'labeled' && (github.event.label.name == 'Patch' || github.event.label.name == 'Type/Patch'))
         uses: actions/add-to-project@main
         with:
           project-url: https://github.com/orgs/is-playground/projects/1
@@ -19,7 +18,6 @@ jobs:
           label-operator: OR
 
       - name: Add issue to IAM Internal Patches
-        if: github.event.action == 'opened' || (github.event.action == 'labeled' && (github.event.label.name == 'Type/Internal-Patch' || github.event.label.name == 'Type/proactive-patch'))
         uses: actions/add-to-project@main
         with:
           project-url: https://github.com/orgs/is-playground/projects/1
@@ -28,7 +26,6 @@ jobs:
           label-operator: OR
 
       - name: Add issue to IAM Internals
-        if: github.event.action == 'opened' || (github.event.action == 'labeled' && !(github.event.label.name == 'Patch' || github.event.label.name == 'Type/Other' || github.event.label.name == 'Type/PeerReview' || github.event.label.name == 'security-report-analysis' || github.event.label.name == 'Type/Internal-Patch' || github.event.label.name == 'Type/proactive-patch'))
         uses: actions/add-to-project@main
         with:
           project-url: https://github.com/orgs/is-playground/projects/2
@@ -37,10 +34,10 @@ jobs:
           label-operator: NOT
 
       - name: Add issue to IAM Other Tasks
-        if: github.event.action == 'opened' || (github.event.action == 'labeled' && (github.event.label.name == 'Type/Other' || github.event.label.name == 'Type/PeerReview' || github.event.label.name == 'security-report-analysis'))
         uses: actions/add-to-project@main
         with:
           project-url: https://github.com/orgs/is-playground/projects/3
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
           labeled: Type/Other, Type/PeerReview, security-report-analysis
           label-operator: OR
+          
