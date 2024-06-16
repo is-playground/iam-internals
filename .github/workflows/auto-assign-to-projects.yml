@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add issue to IAM Patches
-        if: (github.event.action == 'opened' && contains(fromJson('["Patch", "Type/Patch"]'), github.event.issue.labels.*.name)) || (github.event.action == 'labeled' && (github.event.label.name == 'Patch' || github.event.label.name == 'Type/Patch'))
+        if: github.event.action == 'opened' || (github.event.action == 'labeled' && (github.event.label.name == 'Patch' || github.event.label.name == 'Type/Patch'))
         uses: actions/add-to-project@main
         with:
           project-url: https://github.com/orgs/is-playground/projects/1
@@ -19,7 +19,7 @@ jobs:
           label-operator: OR
 
       - name: Add issue to IAM Internal Patches
-        if: (github.event.action == 'opened' && contains(fromJson('["Type/Internal-Patch", "Type/proactive-patch"]'), github.event.issue.labels.*.name)) || (github.event.action == 'labeled' && (github.event.label.name == 'Type/Internal-Patch' || github.event.label.name == 'Type/proactive-patch'))
+        if: github.event.action == 'opened' || (github.event.action == 'labeled' && (github.event.label.name == 'Type/Internal-Patch' || github.event.label.name == 'Type/proactive-patch'))
         uses: actions/add-to-project@main
         with:
           project-url: https://github.com/orgs/is-playground/projects/1
@@ -28,7 +28,7 @@ jobs:
           label-operator: OR
 
       - name: Add issue to IAM Internals
-        if: (github.event.action == 'opened' && !contains(fromJson('["Patch", "Type/Other", "Type/PeerReview", "security-report-analysis", "Type/Internal-Patch", "Type/proactive-patch"]'), github.event.issue.labels.*.name)) || (github.event.action == 'labeled' && !contains(fromJson('["Patch", "Type/Other", "Type/PeerReview", "security-report-analysis", "Type/Internal-Patch", "Type/proactive-patch"]'), [github.event.label.name]))
+        if: github.event.action == 'opened' || (github.event.action == 'labeled' && !(github.event.label.name == 'Patch' || github.event.label.name == 'Type/Other' || github.event.label.name == 'Type/PeerReview' || github.event.label.name == 'security-report-analysis' || github.event.label.name == 'Type/Internal-Patch' || github.event.label.name == 'Type/proactive-patch'))
         uses: actions/add-to-project@main
         with:
           project-url: https://github.com/orgs/is-playground/projects/2
@@ -37,7 +37,7 @@ jobs:
           label-operator: NOT
 
       - name: Add issue to IAM Other Tasks
-        if: (github.event.action == 'opened' && contains(fromJson('["Type/Other", "Type/PeerReview", "security-report-analysis"]'), github.event.issue.labels.*.name)) || (github.event.action == 'labeled' && (github.event.label.name == 'Type/Other' || github.event.label.name == 'Type/PeerReview' || github.event.label.name == 'security-report-analysis'))
+        if: github.event.action == 'opened' || (github.event.action == 'labeled' && (github.event.label.name == 'Type/Other' || github.event.label.name == 'Type/PeerReview' || github.event.label.name == 'security-report-analysis'))
         uses: actions/add-to-project@main
         with:
           project-url: https://github.com/orgs/is-playground/projects/3
