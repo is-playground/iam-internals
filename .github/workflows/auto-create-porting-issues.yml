@@ -32,7 +32,7 @@ jobs:
                 issue_number
             });
 
-            const assignees = issue.data.assignees.map(assignee => assignee.login);
+            const assignees = issue.data.assignees ? issue.data.assignees.map(assignee => assignee.login) : [];
             console.log("Assignees being added: ", assignees);
 
             const label = context.payload.label.name;
@@ -54,4 +54,3 @@ jobs:
                 ...issueData
             });
 
-            console.log("Issue creation response: ", response);  // Debugging line
