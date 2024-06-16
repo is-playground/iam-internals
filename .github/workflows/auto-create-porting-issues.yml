@@ -30,7 +30,7 @@ jobs:
             const issueTitle = context.payload.issue.title;
             
             // Prepare assignees for the new issue
-            const assigneeLogins = assignees.map(assignee => assignee.login);
+            const assigneeLogins = assignees ? assignees.map(assignee => assignee.login) : [];
 
             const issueData = {
                 title: `[Internal]${portType}[${version}] ${issueTitle}`,
