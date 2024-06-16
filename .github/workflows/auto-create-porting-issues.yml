@@ -23,26 +23,35 @@ jobs:
           github-token: '${{ secrets.ADD_TO_PROJECT_PAT }}'
           script: |
             const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            
+            // Fetch complete issue details
+            const issue = await github.rest.issues.get({
+                owner,
+                repo,
+                issue_number
+            });
+
+            const assignees = issue.data.assignees.map(assignee => assignee.login);
+            console.log("Assignees being added: ", assignees);
+
             const label = context.payload.label.name;
             const portType = label.includes('FrontPort') ? '[Front Port]' : '[Back Port]';
             const version = label.split('-')[1];
-            const { number, assignees } = context.issue;
-            const issueTitle = context.payload.issue.title;
-            
-            // Prepare assignees for the new issue
-            console.log("Assignees being added: ", assignees);
-            const assigneeLogins = assignees ? assignees.map(assignee => assignee.login) : [];
+            const issueTitle = issue.data.title;
 
             const issueData = {
                 title: `[Internal]${portType}[${version}] ${issueTitle}`,
                 labels: ['Type/Internal-Patch', label.split('/')[1]],
                 body: `This issue was automatically created to track ${portType.toLowerCase()} of ${issueTitle}.
-                       Original issue: #${number}`,
-                assignees: assigneeLogins
+                       Original issue: #${issue_number}`,
+                assignees: assignees
             };
 
-            await github.rest.issues.create({
+            const response = await github.rest.issues.create({
                 owner,
                 repo,
                 ...issueData
             });
+
+            console.log("Issue creation response: ", response);  // Debugging line
