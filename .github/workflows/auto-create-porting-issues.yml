@@ -12,7 +12,7 @@ jobs:
       - name: Check for Pending labels and create issues
         uses: actions/github-script@v6
         with:
-          github-token: '${{ secrets.GITHUB_TOKEN }}'
+          github-token: '${{ secrets.ADD_TO_PROJECT_PAT }}'
           script: |
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
