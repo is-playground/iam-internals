@@ -1,0 +1,43 @@
+name: Create porting issues
+
+'on':
+  issues:
+    types:
+      - labeled
+
+jobs:
+  create_issue:
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.label.name == 'Pending/FrontPort-6.0' ||
+      github.event.label.name == 'Pending/FrontPort-6.1' || 
+      github.event.label.name == 'Pending/FrontPort-7.0' || 
+      github.event.label.name == 'Pending/BackPort-6.1' || 
+      github.event.label.name == 'Pending/BackPort-6.0' || 
+      github.event.label.name == 'Pending/BackPort-5.11' || 
+      github.event.label.name == 'Pending/BackPort-5.10'
+    steps:
+      - name: Create porting issue
+        uses: actions/github-script@v6
+        with:
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
+          script: |
+            const { owner, repo } = context.repo;
+            const label = context.payload.label.name;
+            const portType = label.includes('FrontPort') ? '[Front Port]' : '[Back Port]';
+            const version = label.split('-')[1];
+            const { number } = context.issue;
+            const issueTitle = context.payload.issue.title;
+
+            const issueData = {
+                title: `[Internal]${portType}[${version}] ${issueTitle}`,
+                labels: ['Type/Internal-Patch', label.split('/')[1]],
+                body: `This issue was automatically created to track ${portType.toLowerCase()} of ${issueTitle}.
+                       Original issue: #${number}`
+            };
+
+            await github.rest.issues.create({
+                owner,
+                repo,
+                ...issueData
+            });
