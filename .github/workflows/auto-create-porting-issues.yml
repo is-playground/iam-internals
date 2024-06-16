@@ -8,49 +8,52 @@ name: Create porting issues
 jobs:
   create_issue:
     runs-on: ubuntu-latest
-    if: >-
-      github.event.label.name == 'Pending/FrontPort-6.0' ||
-      github.event.label.name == 'Pending/FrontPort-6.1' || 
-      github.event.label.name == 'Pending/FrontPort-7.0' || 
-      github.event.label.name == 'Pending/BackPort-6.1' || 
-      github.event.label.name == 'Pending/BackPort-6.0' || 
-      github.event.label.name == 'Pending/BackPort-5.11' || 
-      github.event.label.name == 'Pending/BackPort-5.10'
     steps:
-      - name: Create porting issue
+      - name: Check for Pending labels and create issues
         uses: actions/github-script@v6
         with:
-          github-token: '${{ secrets.ADD_TO_PROJECT_PAT }}'
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
           script: |
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
-            
+
             // Fetch complete issue details
-            const issue = await github.rest.issues.get({
+            const issueDetails = await github.rest.issues.get({
                 owner,
                 repo,
                 issue_number
             });
 
-            const assignees = issue.data.assignees ? issue.data.assignees.map(assignee => assignee.login) : [];
-            console.log("Assignees being added: ", assignees);
+            const issue = issueDetails.data;
+            // Filter for labels that start with 'Pending/'
+            const pendingLabels = issue.labels.filter(label => label.name.startsWith('Pending/'));
 
-            const label = context.payload.label.name;
-            const portType = label.includes('FrontPort') ? '[Front Port]' : '[Back Port]';
-            const version = label.split('-')[1];
-            const issueTitle = issue.data.title;
+            if (pendingLabels.length === 0) {
+              console.log("No 'Pending/' labels found.");
+              return;  // Exit if no relevant labels are present
+            }
 
-            const issueData = {
-                title: `[Internal]${portType}[${version}] ${issueTitle}`,
-                labels: ['Type/Internal-Patch', label.split('/')[1]],
-                body: `This issue was automatically created to track ${portType.toLowerCase()} of ${issueTitle}.
-                       Original issue: #${issue_number}`,
-                assignees: assignees
-            };
+            const assignees = issue.assignees.map(assignee => assignee.login);
+            const issueTitle = issue.title;
 
-            const response = await github.rest.issues.create({
-                owner,
-                repo,
-                ...issueData
-            });
+            for (const label of pendingLabels) {
+              const portType = label.name.includes('FrontPort') ? '[Front Port]' : '[Back Port]';
+              const version = label.name.split('-')[1];
 
+              const issueData = {
+                  title: `[Internal]${portType}[${version}] ${issueTitle}`,
+                  labels: ['Type/Internal-Patch', label.name.split('/')[1]],
+                  body: `This issue was automatically created to track ${portType.toLowerCase()} of ${issueTitle}.
+                         Original issue: #${issue_number}`,
+                  assignees: assignees
+              };
+
+              // Create a new issue for each Pending label
+              const response = await github.rest.issues.create({
+                  owner,
+                  repo,
+                  ...issueData
+              });
+
+              console.log(`Created issue ${response.data.number} for ${label.name}`);
+            }
