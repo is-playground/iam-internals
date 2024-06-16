@@ -26,14 +26,18 @@ jobs:
             const label = context.payload.label.name;
             const portType = label.includes('FrontPort') ? '[Front Port]' : '[Back Port]';
             const version = label.split('-')[1];
-            const { number } = context.issue;
+            const { number, assignees } = context.issue;
             const issueTitle = context.payload.issue.title;
+            
+            // Prepare assignees for the new issue
+            const assigneeLogins = assignees.map(assignee => assignee.login);
 
             const issueData = {
                 title: `[Internal]${portType}[${version}] ${issueTitle}`,
                 labels: ['Type/Internal-Patch', label.split('/')[1]],
                 body: `This issue was automatically created to track ${portType.toLowerCase()} of ${issueTitle}.
-                       Original issue: #${number}`
+                       Original issue: #${number}`,
+                assignees: assigneeLogins
             };
 
             await github.rest.issues.create({
