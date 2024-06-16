@@ -30,7 +30,7 @@ jobs:
         with:
           project-url: https://github.com/orgs/is-playground/projects/2
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
-          labeled: Type/Patch, Type/Other, Type/PeerReview, Type/Internal-Patch, Type/proactive-patch
+          labeled: Type/Patch, Type/Other, Type/PeerReview, security-report-analysis, Type/Internal-Patch, Type/proactive-patch
           label-operator: NOT
 
       - name: Add issue to IAM Other Tasks
@@ -38,6 +38,6 @@ jobs:
         with:
           project-url: https://github.com/orgs/is-playground/projects/3
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
-          labeled: Type/Other, Type/PeerReview
+          labeled: Type/Other, Type/PeerReview, security-report-analysis
           label-operator: OR
           
