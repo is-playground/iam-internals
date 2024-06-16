@@ -2,7 +2,7 @@ name: Add IAM issues to Internal projects
 
 on:
   issues:
-    types: [opened, labeled, unlabeled]
+    types: [labeled, unlabeled]
 
 jobs:
   add-to-project:
