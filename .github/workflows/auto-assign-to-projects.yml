@@ -1,0 +1,43 @@
+name: Add IAM issues to Internal projects
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  add-to-project:
+    name: Add issue to project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issue to IAM Patches
+        uses: actions/add-to-project@main
+        with:
+          project-url: https://github.com/orgs/is-playground/projects/1
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          labeled: Patch, Type/Patch
+          label-operator: OR
+
+      - name: Add issue to IAM Internal Patches
+        uses: actions/add-to-project@main
+        with:
+          project-url: https://github.com/orgs/is-playground/projects/1
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          labeled: Type/Internal-Patch, Type/proactive-patch
+          label-operator: OR
+
+      - name: Add issue to IAM Internals
+        uses: actions/add-to-project@main
+        with:
+          project-url: https://github.com/orgs/is-playground/projects/2
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          labeled: Type/Patch, Type/Other, Type/PeerReview, Type/Internal-Patch, Type/proactive-patch
+          label-operator: NOT
+
+      - name: Add issue to IAM Other Tasks
+        uses: actions/add-to-project@main
+        with:
+          project-url: https://github.com/orgs/is-playground/projects/3
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          labeled: Type/Other, Type/PeerReview
+          label-operator: OR
+          
