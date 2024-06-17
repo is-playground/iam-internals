@@ -39,9 +39,22 @@ jobs:
             for (const label of pendingLabels) {
               const portType = label.name.includes('FrontPort') ? '[Front Port]' : '[Back Port]';
               const version = label.name.split('-')[1];
+              const newIssueTitle = `[Internal]${portType}[${version}] ${issueTitle}`;
+
+              // Search for existing issues with the same title
+              const searchQuery = `repo:${owner}/${repo} is:issue in:title ${newIssueTitle}`;
+              const searchResults = await github.rest.search.issuesAndPullRequests({
+                q: searchQuery
+              });
+              const duplicateIssue = searchResults.data.items.find(issue => issue.title === newIssueTitle);
+
+              if (duplicateIssue) {
+                console.log(`Issue with title '${newIssueTitle}' already exists as #${duplicateIssue.number}.`);
+                continue;
+              }
 
               const issueData = {
-                  title: `[Internal]${portType}[${version}] ${issueTitle}`,
+                  title: newIssueTitle,
                   labels: ['Type/Internal-Patch', label.name.split('/')[1]],
                   body: `This issue was automatically created to track ${portType.toLowerCase()} of ${issueTitle}.
                          Original issue: #${issue_number}`,
