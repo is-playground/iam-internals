@@ -1,5 +1,5 @@
 ---
-name: 🛡️ Security Scan Report Analysis
+name: 🔍 Security Scan Report Analysis
 about: Create an issue for analyzing a security report in the IAM product.
 title: '[Security Report Analysis]'
 labels: ["Type/Security","security-report-analysis"]
