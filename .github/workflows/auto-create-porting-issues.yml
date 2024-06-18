@@ -8,6 +8,14 @@ name: Create porting issues
 jobs:
   create_issue:
     runs-on: ubuntu-latest
+    if: >-
+      ${{ github.event.label.name == 'Pending/BackPort-6.1' ||
+      github.event.label.name == 'Pending/BackPort-6.0' || 
+      github.event.label.name == 'Pending/BackPort-5.11' || 
+      github.event.label.name == 'Pending/BackPort-5.10' || 
+      github.event.label.name == 'Pending/FrontPort-6.0' ||
+      github.event.label.name == 'Pending/FrontPort-6.1' ||
+      github.event.label.name == 'Pending/FrontPort-7.0' }}
     steps:
       - name: Check for Pending labels and create issues
         uses: actions/github-script@v6
@@ -25,48 +33,38 @@ jobs:
             });
 
             const issue = issueDetails.data;
-            // Filter for labels that start with 'Pending/'
-            const pendingLabels = issue.labels.filter(label => label.name.startsWith('Pending/'));
-
-            if (pendingLabels.length === 0) {
-              console.log("No 'Pending/' labels found.");
-              return;  // Exit if no relevant labels are present
-            }
-
             const assignees = issue.assignees.map(assignee => assignee.login);
             const issueTitle = issue.title;
+            const label = context.payload.label;
+            const portType = label.name.includes('FrontPort') ? '[Front Port]' : '[Back Port]';
+            const version = label.name.split('-')[1];
+            const newIssueTitle = `[Internal]${portType}[${version}] ${issueTitle}`;
 
-            for (const label of pendingLabels) {
-              const portType = label.name.includes('FrontPort') ? '[Front Port]' : '[Back Port]';
-              const version = label.name.split('-')[1];
-              const newIssueTitle = `[Internal]${portType}[${version}] ${issueTitle}`;
+            // Search for existing issues with the same title
+            const searchQuery = `repo:${owner}/${repo} is:issue in:title ${newIssueTitle}`;
+            const searchResults = await github.rest.search.issuesAndPullRequests({
+              q: searchQuery
+            });
+            const duplicateIssue = searchResults.data.items.find(issue => issue.title === newIssueTitle);
 
-              // Search for existing issues with the same title
-              const searchQuery = `repo:${owner}/${repo} is:issue in:title ${newIssueTitle}`;
-              const searchResults = await github.rest.search.issuesAndPullRequests({
-                q: searchQuery
-              });
-              const duplicateIssue = searchResults.data.items.find(issue => issue.title === newIssueTitle);
-
-              if (duplicateIssue) {
-                console.log(`Issue with title '${newIssueTitle}' already exists as #${duplicateIssue.number}.`);
-                continue;
-              }
-
-              const issueData = {
-                  title: newIssueTitle,
-                  labels: ['Type/Internal-Patch', label.name.split('/')[1]],
-                  body: `This issue was automatically created to track ${portType.toLowerCase()} of ${issueTitle}.
-                         Original issue: #${issue_number}`,
-                  assignees: assignees
-              };
-
-              // Create a new issue for each Pending label
-              const response = await github.rest.issues.create({
-                  owner,
-                  repo,
-                  ...issueData
-              });
-
-              console.log(`Created issue ${response.data.number} for ${label.name}`);
+            if (duplicateIssue) {
+              console.log(`Issue with title '${newIssueTitle}' already exists as #${duplicateIssue.number}.`);
+              return;
             }
+
+            const issueData = {
+                title: newIssueTitle,
+                labels: ['Type/Internal-Patch', label.name.split('/')[1]],
+                body: `This issue was automatically created to track ${portType.toLowerCase()} of ${issueTitle}.
+                        Original issue: #${issue_number}`,
+                assignees: assignees
+            };
+
+            // Create a new issue for each Pending label
+            const response = await github.rest.issues.create({
+                owner,
+                repo,
+                ...issueData
+            });
+
+            console.log(`Created issue ${response.data.number} for ${label.name}`);
